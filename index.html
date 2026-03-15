@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>My Archive</title>
-    <meta name="theme-color" content="#111318" />
+    <meta name="theme-color" content="#101319" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -13,7 +13,7 @@
       <section id="coverScreen" class="screen active">
         <header class="topbar">
           <div>
-            <p class="eyebrow">private dashboard</p>
+            <p id="coverEybrow" class="eyebrow">private dashboard</p>
             <h1 id="coverLogo" class="logo">My Archive</h1>
           </div>
           <button id="coverHelpBtn" class="ghost-btn">使い方</button>
@@ -34,7 +34,7 @@
             <article class="cover-card">
               <h3>今週の振り返り</h3>
               <ul class="plain-list">
-                <li>記録数 12</li>
+                <li>記録数 <span id="coverCount">0</span></li>
                 <li>お気に入り追加 3</li>
                 <li>あとで見る 5</li>
               </ul>
@@ -42,7 +42,7 @@
 
             <article class="cover-card">
               <h3>最近のタグ</h3>
-              <div class="chip-row">
+              <div class="chip-row" id="coverRecentTags">
                 <span class="chip">夜</span>
                 <span class="chip">短時間</span>
                 <span class="chip">再視聴</span>
@@ -52,8 +52,8 @@
 
           <div class="cover-card search-card">
             <label for="coverSearch">メモ検索</label>
-            <input id="coverSearch" type="search" placeholder="作品名やキーワードで検索" />
-            <p class="hint">タイトルを長押しすると詳細設定が開きます。</p>
+            <input id="coverSearch" type="search" placeholder="作品名やキーワードで検索" autocomplete="off" />
+            <p class="hint">ロゴ長押し / ロゴ5連打 / 検索欄に合言葉入力で詳細設定が開きます。</p>
           </div>
         </main>
       </section>
@@ -65,7 +65,9 @@
             <h1 class="logo">Library Vault</h1>
           </div>
           <div class="topbar-actions">
+            <button id="settingsBtn" class="ghost-btn">設定</button>
             <button id="exportBtn" class="ghost-btn">書き出し</button>
+            <button id="importBtn" class="ghost-btn">読み込み</button>
             <button id="panicBtn" class="panic-btn">すぐ隠す</button>
           </div>
         </header>
@@ -87,18 +89,29 @@
           </section>
 
           <section class="panel">
-            <div class="panel-head">
+            <div class="panel-head stacked-mobile">
               <h2>作品一覧</h2>
-              <button id="addSampleBtn" class="ghost-btn">サンプル再投入</button>
+              <div class="panel-actions">
+                <input id="workSearch" class="compact-input" type="search" placeholder="作品名 / 女優名 / 品番で検索" autocomplete="off" />
+                <button id="addWorkBtn" class="primary-btn">作品追加</button>
+              </div>
             </div>
             <div id="worksList" class="works-list"></div>
           </section>
 
-          <section class="panel">
-            <div class="panel-head">
-              <h2>最近の記録</h2>
+          <section class="panel two-col-panel">
+            <div>
+              <div class="panel-head">
+                <h2>最近の記録</h2>
+              </div>
+              <div id="recentLogs" class="log-list empty-state">まだ記録がありません。</div>
             </div>
-            <div id="recentLogs" class="log-list empty-state">まだ記録がありません。</div>
+            <div>
+              <div class="panel-head">
+                <h2>女優一覧</h2>
+              </div>
+              <div id="actressList" class="stat-lines"></div>
+            </div>
           </section>
 
           <section class="panel">
@@ -118,17 +131,23 @@
                 <h3>よく選ぶ女優</h3>
                 <div id="actressStats" class="stat-lines"></div>
               </article>
+              <article class="analysis-card">
+                <h3>好みメモ</h3>
+                <div id="insightText" class="insight-box"></div>
+              </article>
             </div>
           </section>
         </main>
       </section>
     </div>
 
+    <input id="importFileInput" type="file" accept="application/json" hidden />
+
     <div id="pinModal" class="modal hidden" aria-hidden="true">
       <div class="modal-card">
         <p class="eyebrow">unlock</p>
         <h2>プライベートモード</h2>
-        <p class="modal-copy">4桁PINを入力してください。初回は <strong>2468</strong> です。入室後に変更できるよう拡張できます。</p>
+        <p class="modal-copy">4桁PINを入力してください。初回は <strong>2468</strong> です。</p>
         <input id="pinInput" class="pin-input" inputmode="numeric" maxlength="4" placeholder="4桁PIN" />
         <p id="pinError" class="error-text"></p>
         <div class="modal-actions">
@@ -170,6 +189,11 @@
           <div id="expectationOptions" class="option-grid"></div>
         </div>
 
+        <div class="field-block">
+          <label>満足度（任意）</label>
+          <div id="satisfactionOptions" class="option-grid"></div>
+        </div>
+
         <div class="modal-actions">
           <button id="cancelSelectBtn" class="ghost-btn">キャンセル</button>
           <button id="saveSelectionBtn" class="primary-btn">保存する</button>
@@ -177,12 +201,64 @@
       </div>
     </div>
 
+    <div id="workModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card wide">
+        <p class="eyebrow">add work</p>
+        <h2>作品を追加</h2>
+        <div class="form-grid">
+          <label>
+            <span>作品名</span>
+            <input id="workTitleInput" class="pin-input" placeholder="作品名" />
+          </label>
+          <label>
+            <span>女優名</span>
+            <input id="workActressInput" class="pin-input" placeholder="女優名" />
+          </label>
+          <label>
+            <span>品番</span>
+            <input id="workCodeInput" class="pin-input" placeholder="AB-123" />
+          </label>
+          <label>
+            <span>画像URL</span>
+            <input id="workImageInput" class="pin-input" placeholder="https://..." />
+          </label>
+          <label class="full-span">
+            <span>タグ（カンマ区切り）</span>
+            <input id="workTagsInput" class="pin-input" placeholder="夜向け, 安定枠" />
+          </label>
+        </div>
+        <p id="workError" class="error-text"></p>
+        <div class="modal-actions">
+          <button id="cancelWorkBtn" class="ghost-btn">キャンセル</button>
+          <button id="saveWorkBtn" class="primary-btn">追加する</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="settingsModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card">
+        <p class="eyebrow">settings</p>
+        <h2>設定</h2>
+        <label>
+          <span>新しいPIN</span>
+          <input id="newPinInput" class="pin-input" inputmode="numeric" maxlength="4" placeholder="4桁PIN" />
+        </label>
+        <p class="hint">4桁で入力してください。保存すると次回からこのPINになります。</p>
+        <p id="settingsError" class="error-text"></p>
+        <div class="modal-actions">
+          <button id="resetDataBtn" class="ghost-btn danger-outline">データ初期化</button>
+          <button id="closeSettingsBtn" class="ghost-btn">閉じる</button>
+          <button id="saveSettingsBtn" class="primary-btn">保存</button>
+        </div>
+      </div>
+    </div>
+
     <div id="helpModal" class="modal hidden" aria-hidden="true">
       <div class="modal-card">
         <p class="eyebrow">guide</p>
-        <h2>この試作版について</h2>
-        <p>タイトルの <strong>My Archive</strong> を約2.2秒長押しすると、PIN入力画面が出ます。</p>
-        <p>これはブラウザ保存型の試作です。記録はそのブラウザ内に保存されます。</p>
+        <h2>この完成版について</h2>
+        <p>秘密導線は3つあります。<strong>ロゴ長押し</strong>、<strong>ロゴ5連打</strong>、<strong>検索欄に vault2468 と入力</strong>です。</p>
+        <p>記録はこのブラウザ内に保存されます。機種変更やブラウザ削除に備えて、定期的にJSON書き出しをしてください。</p>
         <div class="modal-actions">
           <button id="closeHelpBtn" class="primary-btn">閉じる</button>
         </div>
