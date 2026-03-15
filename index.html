@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>My Archive</title>
+    <meta name="theme-color" content="#111318" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <section id="coverScreen" class="screen active">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">private dashboard</p>
+            <h1 id="coverLogo" class="logo">My Archive</h1>
+          </div>
+          <button id="coverHelpBtn" class="ghost-btn">使い方</button>
+        </header>
+
+        <main class="cover-main">
+          <div class="cover-card hero">
+            <h2>最近のメモ</h2>
+            <p>観た動画や気になった作品を、自分用にゆるく整理するためのダッシュボード。</p>
+            <div class="chip-row">
+              <span class="chip">お気に入り整理</span>
+              <span class="chip">視聴ログ</span>
+              <span class="chip">あとで見る</span>
+            </div>
+          </div>
+
+          <div class="cover-grid">
+            <article class="cover-card">
+              <h3>今週の振り返り</h3>
+              <ul class="plain-list">
+                <li>記録数 12</li>
+                <li>お気に入り追加 3</li>
+                <li>あとで見る 5</li>
+              </ul>
+            </article>
+
+            <article class="cover-card">
+              <h3>最近のタグ</h3>
+              <div class="chip-row">
+                <span class="chip">夜</span>
+                <span class="chip">短時間</span>
+                <span class="chip">再視聴</span>
+              </div>
+            </article>
+          </div>
+
+          <div class="cover-card search-card">
+            <label for="coverSearch">メモ検索</label>
+            <input id="coverSearch" type="search" placeholder="作品名やキーワードで検索" />
+            <p class="hint">タイトルを長押しすると詳細設定が開きます。</p>
+          </div>
+        </main>
+      </section>
+
+      <section id="vaultScreen" class="screen">
+        <header class="topbar vault-topbar">
+          <div>
+            <p class="eyebrow">private mode</p>
+            <h1 class="logo">Library Vault</h1>
+          </div>
+          <div class="topbar-actions">
+            <button id="exportBtn" class="ghost-btn">書き出し</button>
+            <button id="panicBtn" class="panic-btn">すぐ隠す</button>
+          </div>
+        </header>
+
+        <main class="vault-main">
+          <section class="summary-grid">
+            <article class="summary-card">
+              <p class="summary-label">総記録数</p>
+              <p id="totalSelections" class="summary-value">0</p>
+            </article>
+            <article class="summary-card">
+              <p class="summary-label">今月</p>
+              <p id="monthlySelections" class="summary-value">0</p>
+            </article>
+            <article class="summary-card">
+              <p class="summary-label">再視聴率</p>
+              <p id="rewatchRate" class="summary-value">0%</p>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>作品一覧</h2>
+              <button id="addSampleBtn" class="ghost-btn">サンプル再投入</button>
+            </div>
+            <div id="worksList" class="works-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>最近の記録</h2>
+            </div>
+            <div id="recentLogs" class="log-list empty-state">まだ記録がありません。</div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>好み分析</h2>
+            </div>
+            <div class="analysis-grid">
+              <article class="analysis-card">
+                <h3>どんな時に見たか</h3>
+                <div id="situationStats" class="stat-lines"></div>
+              </article>
+              <article class="analysis-card">
+                <h3>気分傾向</h3>
+                <div id="moodStats" class="stat-lines"></div>
+              </article>
+              <article class="analysis-card">
+                <h3>よく選ぶ女優</h3>
+                <div id="actressStats" class="stat-lines"></div>
+              </article>
+            </div>
+          </section>
+        </main>
+      </section>
+    </div>
+
+    <div id="pinModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card">
+        <p class="eyebrow">unlock</p>
+        <h2>プライベートモード</h2>
+        <p class="modal-copy">4桁PINを入力してください。初回は <strong>2468</strong> です。入室後に変更できるよう拡張できます。</p>
+        <input id="pinInput" class="pin-input" inputmode="numeric" maxlength="4" placeholder="4桁PIN" />
+        <p id="pinError" class="error-text"></p>
+        <div class="modal-actions">
+          <button id="closePinBtn" class="ghost-btn">閉じる</button>
+          <button id="unlockBtn" class="primary-btn">開く</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="selectModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card wide">
+        <p class="eyebrow">selection log</p>
+        <h2>これを選んだ</h2>
+        <div class="selection-target">
+          <img id="modalImage" alt="作品画像" />
+          <div>
+            <h3 id="modalTitle"></h3>
+            <p id="modalSubtitle"></p>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <label>どんな時に見たか</label>
+          <div id="situationOptions" class="option-grid"></div>
+        </div>
+
+        <div class="field-block">
+          <label>気分</label>
+          <div id="moodOptions" class="option-grid"></div>
+        </div>
+
+        <div class="field-block">
+          <label>新規 / 再視聴</label>
+          <div id="selectionTypeOptions" class="option-grid"></div>
+        </div>
+
+        <div class="field-block">
+          <label>期待値</label>
+          <div id="expectationOptions" class="option-grid"></div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="cancelSelectBtn" class="ghost-btn">キャンセル</button>
+          <button id="saveSelectionBtn" class="primary-btn">保存する</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="helpModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card">
+        <p class="eyebrow">guide</p>
+        <h2>この試作版について</h2>
+        <p>タイトルの <strong>My Archive</strong> を約2.2秒長押しすると、PIN入力画面が出ます。</p>
+        <p>これはブラウザ保存型の試作です。記録はそのブラウザ内に保存されます。</p>
+        <div class="modal-actions">
+          <button id="closeHelpBtn" class="primary-btn">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
