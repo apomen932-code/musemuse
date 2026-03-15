@@ -1,9 +1,9 @@
 {
   "name": "My Archive",
   "short_name": "Archive",
-  "start_url": "./",
   "display": "standalone",
-  "background_color": "#0d0f14",
-  "theme_color": "#111318",
+  "background_color": "#101319",
+  "theme_color": "#101319",
+  "start_url": "./index.html",
   "icons": []
 }
